@@ -96,7 +96,7 @@ enum file_type { UNKNOWN, COMMON, DIR, CHARDEV, BLOCKDEV, NAMEDTUBE, SOCKET, SYM
 bool fileFormat(const char *filename);
 int createUser(const char *username, const char *password);
 bool changePSW(short uid, const char *newPSW);
-bool chmod(short uid, char flag, char *filePath);
+bool chmod(short uid, char flag, const char *filePath);
 bool initDir(void);
 int makeDir(struct inode &cur_dir_inode, const char* dirName);
 int allocInode(int fileType);
@@ -121,6 +121,7 @@ int createFile(const char *path);
 int insertFileDir(struct inode &cur_dir_inode, const char* filename);
 
 bool deleteFile(const char *path);
+bool deleteDir(const char *path);
 
 void listFile(void);
 size_t writeFile(const char *filePath, const char *buf, size_t size, size_t pos);
@@ -129,6 +130,7 @@ bool openFile(const char* filePath, char flag);
 int analysisPath(const char *path);
 
 bool ckPms(struct inode inode, char flag);
+char getAclMaskCode(const char *flags);
 
 int copyFile(const char *filepath, const char *dest);
 #endif /* core_func_h */

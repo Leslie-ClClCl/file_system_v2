@@ -62,10 +62,11 @@ bool shell(void) {
             else cout << "\'write\' usage:\n   write \33[4mfile_path\33[0m" << endl;
         }
         else if (cmd_content[0] == "open") {
-            if (cmd_content.size() == 2) {
+            if (cmd_content.size() == 2)
                 openFile(cmd_content[1].c_str(), acl_rwx);
-            }
-            else cout << "\'open\' usage:\n   open \33[4mfile_path\33[0m" << endl;
+            else if (cmd_content.size() == 3)
+                openFile(cmd_content[1].c_str(), getAclMaskCode(cmd_content[2].c_str()));
+            else cout << "\'open\' usage:\n   open \33[4mfile_path\33[0m [mode]" << endl;
         }
         else if (cmd_content[0] == "rm") {
             if (cmd_content.size() == 2) {
@@ -78,6 +79,11 @@ bool shell(void) {
                 copyFile(cmd_content[1].c_str(), cmd_content[2].c_str());
             }
             else cout << "\'cp\' usage:\n   cp \33[4msource file\33[0m \33[4mtarget file\33[0m" << endl;
+        }
+        else if (cmd_content[0] == "chmod") {
+            if (cmd_content.size() == 4) {
+                chmod(atoi(cmd_content[1].c_str()), getAclMaskCode(cmd_content[2].c_str()), cmd_content[3].c_str());
+            }
         }
         else cout << "lsh: command not found: " << cmd_content[0] << endl;
     }

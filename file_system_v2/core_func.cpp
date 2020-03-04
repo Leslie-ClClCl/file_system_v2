@@ -123,7 +123,7 @@ bool changePSW(short uid, const char *newPSW) {
  * chmod() is used to change the file's acl table
  * the flag is a mask code of acl_rights
  */
-bool chmod(short uid, char flag, char *filePath) {
+bool chmod(short uid, char flag, const char *filePath) {
     if (uid == 0 && logged_user.user_id != 0) {
         errno = PERMISSION_DENIED;
         return false;
@@ -787,6 +787,32 @@ bool deleteFile(const char *path) {
 }
 
 /*
+ * deleteDir() is used to delete directory recursively
+ */
+bool deleteDir(int inode_num) {
+    if (inode_num == -1)
+        return false;
+    struct dir_entry dir_entry; struct inode inode;
+    readInode(inode_num, inode);
+    int blk_num = 0;
+    while (blk_num < 14 && blk_num < inode.i_block_count) {
+        int de_count = 0;
+        while (de_count < 8) {
+            readDirEntry(inode.i_block[blk_num], de_count, dir_entry);
+            if (dir_entry.file_type == COMMON && dir_entry.name[0] != 0) {
+                char filePath[128];strcpy(filePath, <#const char *__src#>)
+                deleteFile(<#const char *path#>);
+            }
+            else if (dir_entry.file_type == DIR && dir_entry.name[0] != 0)
+                deleteDir(dir_entry.inode);
+            de_count++;
+        }
+        blk_num++;
+    }
+    return true;
+}
+
+/*
  * analysisPath() is used get inode number of the file that the path indicates
  * path begin with '/' means find the file from root directory
  *      begin with '~' means find the file from user's directory
@@ -831,7 +857,29 @@ int analysisPath(const char *path) {
  * flag is the mask code of acl_rights
  */
 bool ckPms(struct inode inode, char flag) {
-    return inode.i_acl[logged_user.user_id] & flag;
+    char acl = inode.i_acl[logged_user.user_id];
+    if ((flag & acl_r) && !(acl & acl_r)) return false;
+    if ((flag & acl_w) && !(acl & acl_w)) return false;
+    if ((flag & acl_x) && !(acl & acl_x)) return false;
+    return true;
+}
+
+/*
+ * getAclMaskCode is used to transform the access flags to the acl_rights msak code
+ * flags: r/w/x
+ */
+char getAclMaskCode(const char *flags) {
+    const char *ptr = flags; char code = 0;
+    while (*ptr != 0) {
+        switch (*ptr) {
+            case 'r': code |= acl_r; break;
+            case 'w': code |= acl_w; break;
+            case 'x': code |= acl_x; break;
+            default:;
+        }
+        ptr++;
+    }
+    return code;
 }
 
 int copyFile(const char *filepath, const char *dest) {
